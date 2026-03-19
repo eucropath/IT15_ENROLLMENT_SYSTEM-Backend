@@ -7,16 +7,27 @@ use App\Models\Course;
 
 class CourseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::all();
-        return response()->json($courses, 200);
+        $perPage = $request->input('per_page', 15);
+        $courses = Course::paginate($perPage);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Courses retrieved',
+            'data' => $courses
+        ], 200);
     }
 
     public function show($id)
     {
         $course = Course::with('students')->findOrFail($id);
-        return response()->json($course, 200);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Course retrieved',
+            'data' => $course
+        ], 200);
     }
 
     public function store(Request $request)
@@ -28,7 +39,12 @@ class CourseController extends Controller
         ]);
 
         $course = Course::create($request->all());
-        return response()->json($course, 201);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Course created successfully',
+            'data' => $course
+        ], 201);
     }
 
     public function update(Request $request, $id)
@@ -42,14 +58,39 @@ class CourseController extends Controller
         ]);
 
         $course->update($request->all());
-        return response()->json($course, 200);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Course updated successfully',
+            'data' => $course
+        ], 200);
     }
 
     public function destroy($id)
     {
         $course = Course::findOrFail($id);
         $course->delete();
-        return response()->json(['message' => 'Course deleted successfully'], 200);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Course deleted successfully',
+            'data' => null
+        ], 200);
+    }
+
+    /**
+     * Get all students in a course
+     */
+    public function students($id)
+    {
+        $course = Course::findOrFail($id);
+        $students = $course->students()->get();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Course students retrieved',
+            'data' => $students
+        ], 200);
     }
 }
 
